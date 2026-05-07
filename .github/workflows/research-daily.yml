@@ -1,0 +1,109 @@
+name: Research Daily Loop
+
+on:
+  schedule:
+    # 13:00 UTC every day (~6am PT / 9am ET). Adjust as needed.
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Research topic (overrides RESEARCH_TOPIC variable)"
+        required: false
+        type: string
+      model:
+        description: "Claude model id"
+        required: false
+        type: string
+        default: "claude-opus-4-7"
+      max_sources:
+        description: "Cap on source-table rows"
+        required: false
+        type: string
+        default: "25"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research-daily
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: claude_research_stack
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TOPIC: ${{ github.event.inputs.topic || vars.RESEARCH_TOPIC }}
+      CRS_MODEL: ${{ github.event.inputs.model || 'claude-opus-4-7' }}
+      CRS_MAX_SOURCES: ${{ github.event.inputs.max_sources || '25' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: claude_research_stack/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate inputs
+        run: |
+          if [ -z "$TOPIC" ]; then
+            echo "::error::No topic. Set repository variable RESEARCH_TOPIC or pass workflow_dispatch input 'topic'."
+            exit 1
+          fi
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set."
+            exit 1
+          fi
+
+      - name: Locate prior run for delta
+        id: prior
+        run: |
+          slug=$(echo "$TOPIC" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]\+/-/g; s/^-\|-$//g')
+          last=$(ls -1 runs/ 2>/dev/null | grep -E '\.json$' | sort | tail -n 1 || true)
+          if [ -n "$last" ]; then
+            echo "path=claude_research_stack/runs/$last" >> "$GITHUB_OUTPUT"
+            echo "Found prior run: $last"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "No prior run on this branch."
+          fi
+
+      - name: Run research loop
+        env:
+          CRS_PRIOR_RUN: ${{ steps.prior.outputs.path }}
+        run: |
+          cd ..
+          python -m claude_research_stack.src.run_daily
+
+      - name: Commit run + report
+        run: |
+          cd ..
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add claude_research_stack/runs claude_research_stack/reports
+          if git diff --cached --quiet; then
+            echo "No new artifacts."
+            exit 0
+          fi
+          stamp=$(date -u +'%Y-%m-%d %H:%M UTC')
+          git commit -m "research: daily run ${stamp} — ${TOPIC}"
+          git push
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-${{ github.run_id }}
+          path: |
+            claude_research_stack/runs/
+            claude_research_stack/reports/
+          retention-days: 30
