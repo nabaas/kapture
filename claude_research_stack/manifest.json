@@ -1,0 +1,19 @@
+{
+  "name": "claude-research-stack",
+  "version": "0.1.0",
+  "description": "Daily autonomous research loop: search, crawl, extract, rank, and synthesize primary sources.",
+  "entrypoint": "src/research_agent.py",
+  "prompt": "prompts/master_routine.md",
+  "schemas": "src/schemas.py",
+  "outputs": {
+    "runs": "runs/",
+    "reports": "reports/"
+  },
+  "stack": [
+    "claude-code",
+    "openai-web-search",
+    "crawl4ai-or-firecrawl",
+    "pydantic",
+    "duckdb-or-sqlite"
+  ]
+}
