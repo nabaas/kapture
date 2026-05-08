@@ -1,0 +1,88 @@
+name: Post Research Tasks
+
+on:
+  workflow_run:
+    workflows: ["Research Daily Loop"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      build_video:
+        description: "Also build today's video (needs more time + ffmpeg)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post-research
+  cancel-in-progress: false
+
+jobs:
+  fan_out:
+    # Only run if the upstream loop succeeded (or this is a manual dispatch)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      BOT_WEBHOOK_URL: ${{ secrets.BOT_WEBHOOK_URL }}
+      BUILD_VIDEO: ${{ github.event.inputs.build_video == 'true' && '1' || '0' }}
+
+    steps:
+      - name: Checkout (latest master to pick up new reports)
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install per-project deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r wallpapers/requirements.txt
+          pip install -r pipelines/requirements.txt
+          # videos/ deps only if we're going to build one
+          if [ "${BUILD_VIDEO}" = "1" ]; then
+            pip install -r videos/requirements.txt
+          fi
+
+      - name: Verify there is at least one report
+        run: |
+          if ! ls claude_research_stack/reports/*.md >/dev/null 2>&1; then
+            echo "::warning::no reports under claude_research_stack/reports — did the upstream loop commit anything?"
+            exit 0
+          fi
+
+      - name: Wire steps 2-5
+        run: bash scripts/run_daily.sh
+
+      - name: Commit fan-out artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            wallpapers/output \
+            pipelines/data \
+            videos/output 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No new artifacts to commit."
+            exit 0
+          fi
+          stamp=$(date -u +'%Y-%m-%d %H:%M UTC')
+          git commit -m "post-research: fan-out artifacts ${stamp}"
+          git push
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-research-${{ github.run_id }}
+          path: |
+            wallpapers/output/
+            pipelines/data/
+            videos/output/
+          retention-days: 14
+          if-no-files-found: ignore
