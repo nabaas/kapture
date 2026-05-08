@@ -2,8 +2,9 @@ name: Research Daily Loop
 
 on:
   schedule:
-    # 13:00 UTC every day (~6am PT / 9am ET). Adjust as needed.
+    # Twice a day: 13:00 UTC (~6am PT / 9am ET) and 23:00 UTC (~3pm PT / 6pm ET).
     - cron: "0 13 * * *"
+    - cron: "0 23 * * *"
   workflow_dispatch:
     inputs:
       topic:

@@ -1,0 +1,17 @@
+name: daily_brief_to_jsonl
+stages:
+  - read_latest:
+      dir: ../claude_research_stack/reports
+      glob: "*.md"
+      key: text
+  - count_lines:
+      source_key: text
+      out_key: line_count
+  - set:
+      key: payload
+      value:
+        kind: daily_brief
+        line_count_placeholder: 0
+  - append_jsonl:
+      path: data/briefs.jsonl
+      key: payload
