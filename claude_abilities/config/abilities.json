@@ -1,0 +1,49 @@
+{
+  "title": "Claude Code — Abilities Map",
+  "subtitle": "Agents · Skills · Recommended VS Code extensions",
+  "columns": [
+    {
+      "heading": "Agents",
+      "color": "accent",
+      "items": [
+        {"name": "claude",            "note": "catch-all general agent"},
+        {"name": "claude-code-guide", "note": "answers Claude Code / SDK / API how-tos"},
+        {"name": "Explore",           "note": "fast read-only code search"},
+        {"name": "general-purpose",   "note": "open-ended research + multi-step tasks"},
+        {"name": "Plan",              "note": "software architect; produces implementation plans"},
+        {"name": "statusline-setup",  "note": "configures Claude Code status line"}
+      ]
+    },
+    {
+      "heading": "Skills",
+      "color": "ok",
+      "items": [
+        {"name": "session-start-hook",     "note": "wire SessionStart hooks for cloud sessions"},
+        {"name": "update-config",          "note": "edit ~/.claude/settings.json safely"},
+        {"name": "keybindings-help",       "note": "rebind / add chord shortcuts"},
+        {"name": "simplify",               "note": "review + de-bloat changed code"},
+        {"name": "fewer-permission-prompts","note": "scan + allowlist common safe tools"},
+        {"name": "loop",                   "note": "run a prompt on a recurring interval"},
+        {"name": "claude-api",             "note": "build / migrate Anthropic SDK apps"},
+        {"name": "init",                   "note": "scaffold a CLAUDE.md for the repo"},
+        {"name": "review",                 "note": "review a pull request"},
+        {"name": "security-review",        "note": "security review of pending changes"}
+      ]
+    },
+    {
+      "heading": "VS Code extensions (paired with this repo)",
+      "color": "fg",
+      "items": [
+        {"name": "Claude Code",            "note": "anthropic.claude-code — first-party IDE integration"},
+        {"name": "Python",                 "note": "ms-python.python — runs the .py code in trading_research/"},
+        {"name": "Pylance",                "note": "ms-python.vscode-pylance — type-aware completions"},
+        {"name": "Ruff",                   "note": "charliermarsh.ruff — fast lint + format"},
+        {"name": "GitHub Pull Requests",   "note": "github.vscode-pull-request-github — review PRs in-editor"},
+        {"name": "GitLens",                "note": "eamodio.gitlens — blame, history, comparisons"},
+        {"name": "Error Lens",             "note": "usernamehw.errorlens — inline diagnostics"},
+        {"name": "YAML",                   "note": "redhat.vscode-yaml — schema for workflow YAML"},
+        {"name": "Markdown All in One",    "note": "yzhang.markdown-all-in-one — for the research briefs"}
+      ]
+    }
+  ]
+}
