@@ -5,6 +5,8 @@ A standalone wallpaper renderer that visualizes, at a glance:
 - **Agents** available to Claude Code in this repo
 - **Skills** loaded for the current session
 - **VS Code extensions** that pair well with these projects
+- **Integrations** — Claude in Chrome, kapture (this repo's Chrome
+  DevTools extension), GitHub MCP, Figma MCP, Notion MCP
 
 Output is a PNG you can set as a desktop wallpaper. The data is read
 from a JSON manifest (`config/abilities.json`) so you can edit what's
