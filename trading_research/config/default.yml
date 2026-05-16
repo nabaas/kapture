@@ -1,0 +1,49 @@
+# Default config for the trading research skeleton.
+# Override per-environment by passing --config to scan.py.
+
+mode: paper                       # paper | live  (live also needs env ack)
+require_per_trade_approval: true  # cannot be disabled
+proposal_ttl_minutes: 30
+default_position_usd: 100         # nominal size per proposal
+max_open_proposals: 10            # back-pressure on alert flood
+
+universe:
+  watchlist:
+    - BTC/USD
+    - ETH/USD
+    - SOL/USD
+    - XRP/USD
+    - DOGE/USD
+  top_gainers_lookback_days: 7
+  top_gainers_n: 5
+
+signals:
+  - name: momentum.ma_crossover
+    params:
+      fast: 10
+      slow: 30
+  - name: momentum.rsi_extremes
+    params:
+      window: 14
+      lower: 30
+      upper: 70
+  - name: anomaly.return_zscore
+    params:
+      window: 50
+      threshold: 2.5
+  - name: regime.vol_regime
+    params:
+      window: 30
+      low_quantile: 0.25
+      high_quantile: 0.75
+
+backtest:
+  bars: 500
+  bar_size: 1Day
+
+alerts:
+  telegram_enabled: true   # falls back to stdout if env vars unset
+
+broker:
+  alpaca_paper_url: https://paper-api.alpaca.markets
+  alpaca_live_url:  https://api.alpaca.markets

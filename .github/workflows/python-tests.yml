@@ -1,0 +1,48 @@
+name: Trading Research Tests
+
+on:
+  pull_request:
+    paths:
+      - "trading_research/**"
+      - ".github/workflows/python-tests.yml"
+  push:
+    branches: [master]
+    paths:
+      - "trading_research/**"
+      - ".github/workflows/python-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install minimal test deps
+        # Tests in trading_research/tests/ are deterministic and do not need
+        # alpaca-py or requests. Defer those to integration tests, which are
+        # not part of CI.
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas pytest "PyYAML>=6.0"
+
+      - name: Run trading_research tests
+        run: python -m pytest trading_research/tests -q
+
+      - name: Verify safety guards still in place
+        # Cheap defense-in-depth: grep the tree for the two literal guard
+        # strings. If someone accidentally removes them in a refactor,
+        # CI fails before the broken code merges.
+        run: |
+          grep -q 'refusing to submit proposal' trading_research/src/broker/alpaca_orders.py
+          grep -q 'refusing live submission' trading_research/src/broker/alpaca_orders.py
+          grep -q 'TRADING_RESEARCH_I_UNDERSTAND_THE_RISK' trading_research/src/data/alpaca_client.py
