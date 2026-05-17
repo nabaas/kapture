@@ -51,7 +51,7 @@
       "items": [
         {"name": "Claude in Chrome",       "note": "Anthropic browser extension — drives Claude alongside any page. Complements kapture's DevTools MCP."},
         {"name": "Kapture (this repo)",    "note": "Chrome DevTools extension exposing browser-control tools over MCP. Configured in .mcp.json."},
-        {"name": "GitHub MCP server",      "note": "Used in this session for PR/issue ops (mcp__github__*). Hosted; auth via personal access token."},
+        {"name": "GitHub MCP server",      "note": "Provided by the harness at session level (not in .mcp.json). Used for PR/issue ops via mcp__github__* tools."},
         {"name": "Figma MCP",              "note": "Read designs from Figma, render diagrams in FigJam. Use when a figma.com URL appears."},
         {"name": "Notion MCP",             "note": "Read/write Notion pages and databases. Available when configured."}
       ]
