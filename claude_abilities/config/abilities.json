@@ -1,6 +1,6 @@
 {
   "title": "Claude Code — Abilities Map",
-  "subtitle": "Agents · Skills · Recommended VS Code extensions",
+  "subtitle": "Agents · Skills · Recommended VS Code extensions · Integrations",
   "columns": [
     {
       "heading": "Agents",
@@ -43,6 +43,17 @@
         {"name": "Error Lens",             "note": "usernamehw.errorlens — inline diagnostics"},
         {"name": "YAML",                   "note": "redhat.vscode-yaml — schema for workflow YAML"},
         {"name": "Markdown All in One",    "note": "yzhang.markdown-all-in-one — for the research briefs"}
+      ]
+    },
+    {
+      "heading": "Integrations",
+      "color": "soft",
+      "items": [
+        {"name": "Claude in Chrome",       "note": "Anthropic browser extension — drives Claude alongside any page. Complements kapture's DevTools MCP."},
+        {"name": "Kapture (this repo)",    "note": "Chrome DevTools extension exposing browser-control tools over MCP. Configured in .mcp.json."},
+        {"name": "GitHub MCP server",      "note": "Provided by the harness at session level (not in .mcp.json). Used for PR/issue ops via mcp__github__* tools."},
+        {"name": "Figma MCP",              "note": "Read designs from Figma, render diagrams in FigJam. Use when a figma.com URL appears."},
+        {"name": "Notion MCP",             "note": "Read/write Notion pages and databases. Available when configured."}
       ]
     }
   ]
