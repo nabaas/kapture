@@ -121,6 +121,7 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 // Handle all messages
+// MV3: must stay sync — async listeners drop sendResponse, see PR #2
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Handle content script messages
   if (sender.tab) {
