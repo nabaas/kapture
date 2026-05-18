@@ -1,8 +1,7 @@
 """Stage 3: render slides as PNGs and compose into an mp4 with ffmpeg.
 
-Requires `ffmpeg` on PATH. Uses the Pillow renderer from the wallpapers
-project conceptually but kept self-contained here so the projects stay
-independent.
+Uses ffmpeg from PATH if available, otherwise falls back to the binary
+bundled with the imageio-ffmpeg package.
 """
 
 from __future__ import annotations
@@ -20,6 +19,17 @@ from PIL import Image, ImageDraw, ImageFont
 BG = (12, 14, 18)
 FG = (240, 240, 245)
 ACCENT = (120, 170, 255)
+
+
+def _ffmpeg_exe() -> str:
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        raise RuntimeError("ffmpeg not found — install it or: pip install imageio-ffmpeg")
 
 
 def _load_font(size: int) -> ImageFont.ImageFont:
@@ -76,8 +86,7 @@ def _wav_duration(path: Path) -> float:
 
 
 def compose(script: dict, audio_dir: Path, out: Path, size: tuple[int, int]) -> Path:
-    if not shutil.which("ffmpeg"):
-        raise RuntimeError("ffmpeg not found on PATH")
+    ffmpeg = _ffmpeg_exe()
 
     work = out.parent / f".{out.stem}_work"
     work.mkdir(parents=True, exist_ok=True)
@@ -96,7 +105,7 @@ def compose(script: dict, audio_dir: Path, out: Path, size: tuple[int, int]) -> 
         seg = work / f"{idx:02d}.mp4"
         subprocess.run(
             [
-                "ffmpeg", "-y", "-loop", "1", "-i", str(png),
+                ffmpeg, "-y", "-loop", "1", "-i", str(png),
                 "-i", str(wav),
                 "-c:v", "libx264", "-tune", "stillimage", "-pix_fmt", "yuv420p",
                 "-c:a", "aac", "-b:a", "128k", "-shortest", "-t", str(dur),
@@ -110,7 +119,7 @@ def compose(script: dict, audio_dir: Path, out: Path, size: tuple[int, int]) -> 
     concat_list.write_text("\n".join(f"file '{p}'" for p in parts), encoding="utf-8")
     out.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+        [ffmpeg, "-y", "-f", "concat", "-safe", "0",
          "-i", str(concat_list), "-c", "copy", str(out)],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
