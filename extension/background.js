@@ -140,7 +140,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (request.type === 'connect') {
-      tabManager.connect(sender.tab.id).then(sendResponse).catch(err => sendResponse({ ok: false, error: String(err?.message ?? err) }));
+      tabManager.connect(sender.tab.id).then(sendResponse).catch(err => {
+        console.error('[kapture] connect failed:', err);
+        sendResponse({ ok: false, error: 'connect failed' });
+      });
       return true; // Keep message channel open for async response
     }
 
@@ -188,7 +191,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Handle messages from popup/panel (not from content scripts)
   if (!sender.tab) {
     if (request.type === 'connect' && request.tabId) {
-      tabManager.connect(request.tabId).then(sendResponse).catch(err => sendResponse({ ok: false, error: String(err?.message ?? err) }));
+      tabManager.connect(request.tabId).then(sendResponse).catch(err => {
+        console.error('[kapture] connect failed:', err);
+        sendResponse({ ok: false, error: 'connect failed' });
+      });
       return true; // Keep message channel open for async response
     }
 
